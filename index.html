@@ -4,7 +4,11 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/src/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
+    <title>Peter England Retail Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script>
       if (localStorage.theme === 'dark' || !('theme' in localStorage)) {
         document.querySelector('html').classList.add('dark');
@@ -24,7 +28,245 @@
             document.querySelector('body').classList.remove('sidebar-expanded');
         }
     </script>   
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23ff6b35'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-family='Arial' font-size='14' font-weight='bold'%3EPE%3C/text%3E%3C/svg%3E" alt="Peter England Logo" class="logo">
+                <h1 class="dashboard-title">Peter England Retail Dashboard</h1>
+            </div>
+            <div class="header-right">
+                <button class="upload-btn" onclick="document.getElementById('excelFile').click()">
+                    <i class="fas fa-upload"></i> Upload Excel Data
+                </button>
+                <input type="file" id="excelFile" accept=".xlsx,.xls" style="display: none;" onchange="handleFileUpload(event)">
+                <div class="date-display" id="lastUpdated">Last Updated: --</div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="navigation">
+            <button class="nav-btn active" onclick="showOverview()">
+                <i class="fas fa-chart-pie"></i> Overview
+            </button>
+            <div class="dropdown">
+                <button class="nav-btn dropdown-btn">
+                    <i class="fas fa-store"></i> Stores <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="dropdown-content" id="storeDropdown">
+                    <!-- Store list will be populated dynamically -->
+                </div>
+            </div>
+            <button class="nav-btn" onclick="showComparison()">
+                <i class="fas fa-chart-bar"></i> Comparison
+            </button>
+            <button class="nav-btn" onclick="showReports()">
+                <i class="fas fa-file-alt"></i> Reports
+            </button>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Overview Section -->
+            <div id="overviewSection" class="content-section active">
+                <div class="overview-header">
+                    <h2>Store Performance Overview</h2>
+                    <div class="filter-controls">
+                        <select id="timeFilter" onchange="updateCharts()">
+                            <option value="current">Current Period</option>
+                            <option value="last30">Last 30 Days</option>
+                            <option value="last90">Last 90 Days</option>
+                        </select>
+                        <select id="categoryFilter" onchange="updateCharts()">
+                            <option value="all">All Categories</option>
+                            <option value="sales">Sales Metrics</option>
+                            <option value="operations">Operations</option>
+                            <option value="customer">Customer Experience</option>
+                            <option value="staff">Staff Performance</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card sales">
+                        <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="kpi-content">
+                            <h3>Total Revenue</h3>
+                            <div class="kpi-value" id="totalRevenue">₹0</div>
+                            <div class="kpi-change positive" id="revenueChange">+0%</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card operations">
+                        <div class="kpi-icon"><i class="fas fa-users"></i></div>
+                        <div class="kpi-content">
+                            <h3>Total Footfall</h3>
+                            <div class="kpi-value" id="totalFootfall">0</div>
+                            <div class="kpi-change positive" id="footfallChange">+0%</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card customer">
+                        <div class="kpi-icon"><i class="fas fa-star"></i></div>
+                        <div class="kpi-content">
+                            <h3>Avg CSAT Score</h3>
+                            <div class="kpi-value" id="avgCSAT">0</div>
+                            <div class="kpi-change positive" id="csatChange">+0%</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card staff">
+                        <div class="kpi-icon"><i class="fas fa-certificate"></i></div>
+                        <div class="kpi-content">
+                            <h3>Training Completion</h3>
+                            <div class="kpi-value" id="trainingCompletion">0%</div>
+                            <div class="kpi-change positive" id="trainingChange">+0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Grid -->
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>Sales Performance by Store</h3>
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Conversion Rate vs Footfall</h3>
+                        <canvas id="conversionChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Customer Satisfaction Distribution</h3>
+                        <canvas id="csatChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Store Audit Scores</h3>
+                        <canvas id="auditChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Store Performance Table -->
+                <div class="table-container">
+                    <h3>Store Performance Summary</h3>
+                    <div class="table-wrapper">
+                        <table id="storeTable">
+                            <thead>
+                                <tr>
+                                    <th>Store</th>
+                                    <th>Sales/SqFt</th>
+                                    <th>Conversion Rate</th>
+                                    <th>ATV</th>
+                                    <th>CSAT</th>
+                                    <th>Overall Score</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="storeTableBody">
+                                <!-- Data will be populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Individual Store Section -->
+            <div id="storeSection" class="content-section">
+                <div class="store-header">
+                    <button class="back-btn" onclick="showOverview()">
+                        <i class="fas fa-arrow-left"></i> Back to Overview
+                    </button>
+                    <h2 id="storeTitle">Store Details</h2>
+                    <div class="store-status" id="storeStatus">Active</div>
+                </div>
+
+                <!-- Store KPIs -->
+                <div class="store-kpis">
+                    <!-- Store-specific KPIs will be populated here -->
+                </div>
+
+                <!-- Store Charts -->
+                <div class="store-charts">
+                    <!-- Store-specific charts will be populated here -->
+                </div>
+
+                <!-- Metric Categories -->
+                <div class="metric-categories">
+                    <div class="category-card sales-metrics">
+                        <h3>Sales Metrics</h3>
+                        <div class="metric-list" id="salesMetrics">
+                            <!-- Sales metrics will be populated here -->
+                        </div>
+                    </div>
+                    <div class="category-card operations-metrics">
+                        <h3>Operations</h3>
+                        <div class="metric-list" id="operationsMetrics">
+                            <!-- Operations metrics will be populated here -->
+                        </div>
+                    </div>
+                    <div class="category-card customer-metrics">
+                        <h3>Customer Experience</h3>
+                        <div class="metric-list" id="customerMetrics">
+                            <!-- Customer metrics will be populated here -->
+                        </div>
+                    </div>
+                    <div class="category-card staff-metrics">
+                        <h3>Staff Performance</h3>
+                        <div class="metric-list" id="staffMetrics">
+                            <!-- Staff metrics will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Section -->
+            <div id="comparisonSection" class="content-section">
+                <div class="comparison-header">
+                    <h2>Store Comparison</h2>
+                    <div class="comparison-controls">
+                        <select id="compareStore1" onchange="updateComparison()">
+                            <option value="">Select Store 1</option>
+                        </select>
+                        <select id="compareStore2" onchange="updateComparison()">
+                            <option value="">Select Store 2</option>
+                        </select>
+                        <select id="compareMetric" onchange="updateComparison()">
+                            <option value="all">All Metrics</option>
+                            <option value="sales">Sales Metrics</option>
+                            <option value="operations">Operations</option>
+                            <option value="customer">Customer Experience</option>
+                            <option value="staff">Staff Performance</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="comparison-content">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Reports Section -->
+            <div id="reportsSection" class="content-section">
+                <div class="reports-header">
+                    <h2>Reports & Analytics</h2>
+                    <button class="export-btn" onclick="exportReports()">
+                        <i class="fas fa-download"></i> Export Report
+                    </button>
+                </div>
+                <div class="reports-grid">
+                    <div class="report-card">
+                        <h3>Performance Trends</h3>
+                        <canvas id="trendsChart"></canvas>
+                    </div>
+                    <div class="report-card">
+                        <h3>Top & Bottom Performers</h3>
+                        <div id="performanceRanking"></div>
+                    </div>
+                    <div class="report-card">
+                        <h3>Action Items</h3>
+                        <div id="actionItems"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="dashboard.js"></script>
   </body>
 </html>

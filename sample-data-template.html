@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Template - Peter England Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #ff6b35;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .instructions {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #ff6b35;
+        }
+        .template-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 12px;
+        }
+        .template-table th,
+        .template-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .template-table th {
+            background: #ff6b35;
+            color: white;
+            font-weight: 600;
+        }
+        .template-table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        .category-header {
+            background: #667eea !important;
+            color: white !important;
+            font-weight: bold;
+            text-align: center;
+        }
+        .download-btn {
+            background: #ff6b35;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .download-btn:hover {
+            background: #e55a2b;
+        }
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover {
+            background: #545b62;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">← Back to Dashboard</a>
+        
+        <h1>Excel Data Template - Peter England Retail Dashboard</h1>
+        
+        <div class="instructions">
+            <h3>Instructions for Data Upload:</h3>
+            <ol>
+                <li><strong>Download the template:</strong> Use the button below to download the Excel template.</li>
+                <li><strong>Fill in your data:</strong> Replace the sample values with actual store data. Keep the column headers exactly as shown.</li>
+                <li><strong>Save as Excel file:</strong> Save your file as .xlsx or .xls format.</li>
+                <li><strong>Upload to dashboard:</strong> Use the "Upload Excel Data" button in the main dashboard to import your data.</li>
+            </ol>
+            <p><strong>Note:</strong> Each row represents one store. The template includes all 30 Peter England stores with sample data.</p>
+        </div>
+
+        <button class="download-btn" onclick="downloadTemplate()">📥 Download Excel Template</button>
+        <button class="download-btn" onclick="generateSampleData()">📊 Generate Sample Data</button>
+
+        <h3>Template Structure Preview:</h3>
+        <p>Your Excel file should have the following columns in this exact order:</p>
+
+        <table class="template-table">
+            <thead>
+                <tr>
+                    <th>Store Name</th>
+                    <th>Location</th>
+                    <th>Area (sqft)</th>
+                    <th>Status</th>
+                    <th class="category-header" colspan="4">Sales Metrics</th>
+                    <th class="category-header" colspan="5">Operations</th>
+                    <th class="category-header" colspan="3">Customer Experience</th>
+                    <th class="category-header" colspan="4">Staff Performance</th>
+                    <th class="category-header" colspan="4">Infrastructure</th>
+                </tr>
+                <tr>
+                    <th>Store Name</th>
+                    <th>Location</th>
+                    <th>Area</th>
+                    <th>Status</th>
+                    <th>Sales Per Square Foot</th>
+                    <th>Conversion Rate</th>
+                    <th>Average Transaction Value</th>
+                    <th>Footfall Count</th>
+                    <th>VM Compliance Score</th>
+                    <th>Planogram Adherence</th>
+                    <th>Cleanliness & Upkeep Score</th>
+                    <th>In-stock Rate</th>
+                    <th>Sell-through Rate</th>
+                    <th>Customer Satisfaction Score</th>
+                    <th>Net Promoter Score</th>
+                    <th>Grievance Resolution TAT</th>
+                    <th>Product Knowledge Score</th>
+                    <th>Grooming Compliance</th>
+                    <th>Training Completion Rate</th>
+                    <th>Manager KPI Compliance</th>
+                    <th>IT & POS Downtime</th>
+                    <th>Store Audit Score</th>
+                    <th>Energy Efficiency</th>
+                    <th>Community Engagement Index</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PE Delhi CP</td>
+                    <td>Delhi CP</td>
+                    <td>2500</td>
+                    <td>Active</td>
+                    <td>5200</td>
+                    <td>26.5</td>
+                    <td>2650</td>
+                    <td>1200</td>
+                    <td>92</td>
+                    <td>94</td>
+                    <td>96</td>
+                    <td>88</td>
+                    <td>82</td>
+                    <td>8.7</td>
+                    <td>52</td>
+                    <td>22</td>
+                    <td>87</td>
+                    <td>94</td>
+                    <td>98</td>
+                    <td>91</td>
+                    <td>1.8</td>
+                    <td>93</td>
+                    <td>14.2</td>
+                    <td>78</td>
+                </tr>
+                <tr>
+                    <td>PE Mumbai Linking Road</td>
+                    <td>Mumbai Linking Road</td>
+                    <td>2000</td>
+                    <td>Active</td>
+                    <td>4800</td>
+                    <td>24.2</td>
+                    <td>2400</td>
+                    <td>1100</td>
+                    <td>89</td>
+                    <td>92</td>
+                    <td>94</td>
+                    <td>86</td>
+                    <td>79</td>
+                    <td>8.4</td>
+                    <td>48</td>
+                    <td>26</td>
+                    <td>84</td>
+                    <td>91</td>
+                    <td>95</td>
+                    <td>88</td>
+                    <td>2.1</td>
+                    <td>90</td>
+                    <td>15.1</td>
+                    <td>72</td>
+                </tr>
+                <tr>
+                    <td colspan="24" style="text-align: center; font-style: italic; color: #666;">
+                        ... (28 more stores with similar data structure)
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top: 30px; padding: 20px; background: #e9ecef; border-radius: 8px;">
+            <h4>Data Validation Rules:</h4>
+            <ul>
+                <li><strong>Sales Per Square Foot:</strong> Values in ₹ (e.g., 5000)</li>
+                <li><strong>Conversion Rate:</strong> Percentage values (e.g., 25.5)</li>
+                <li><strong>Average Transaction Value:</strong> Values in ₹ (e.g., 2500)</li>
+                <li><strong>Footfall Count:</strong> Number of visitors (e.g., 1000)</li>
+                <li><strong>Percentage fields:</strong> Values between 0-100 (e.g., 85.5)</li>
+                <li><strong>CSAT Score:</strong> Values between 0-10 (e.g., 8.5)</li>
+                <li><strong>NPS Score:</strong> Values between -100 to +100 (e.g., 50)</li>
+                <li><strong>TAT & Downtime:</strong> Values in hours (e.g., 24)</li>
+                <li><strong>Energy Efficiency:</strong> Values in kWh/sqft (e.g., 15.2)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // Store names for template
+        const stores = [
+            'PE Delhi CP', 'PE Mumbai Linking Road', 'PE Bangalore MG Road', 'PE Chennai Express Avenue',
+            'PE Hyderabad Banjara Hills', 'PE Pune FC Road', 'PE Kolkata Park Street', 'PE Gurgaon City Centre',
+            'PE Noida City Centre', 'PE Jaipur Pink Square', 'PE Ahmedabad CG Road', 'PE Lucknow Hazratganj',
+            'PE Indore Treasure Island', 'PE Bhopal DB City', 'PE Chandigarh Elante', 'PE Kochi Lulu Mall',
+            'PE Coimbatore Brookefields', 'PE Mysore Forum', 'PE Visakhapatnam CMR Central', 'PE Vijayawada PVP Square',
+            'PE Nagpur Empress City', 'PE Surat VR Mall', 'PE Vadodara Inorbit', 'PE Rajkot RWorld', 
+            'PE Ludhiana MBD Mall', 'PE Jalandhar Curo High Street', 'PE Amritsar Alpha One', 'PE Dehradun Pacific',
+            'PE Kanpur Z Square', 'PE Agra TDI Mall'
+        ];
+
+        function generateSampleData() {
+            const sampleData = stores.map((storeName, index) => {
+                return {
+                    'Store Name': storeName,
+                    'Location': storeName.split(' ').slice(1).join(' '),
+                    'Area': Math.floor(Math.random() * 2000) + 1000,
+                    'Status': Math.random() > 0.1 ? 'Active' : 'Inactive',
+                    'Sales Per Square Foot': Math.floor(Math.random() * 2000) + 4000,
+                    'Conversion Rate': Math.round((Math.random() * 15 + 20) * 10) / 10,
+                    'Average Transaction Value': Math.floor(Math.random() * 1000) + 2000,
+                    'Footfall Count': Math.floor(Math.random() * 800) + 800,
+                    'VM Compliance Score': Math.round((Math.random() * 20 + 80) * 10) / 10,
+                    'Planogram Adherence': Math.round((Math.random() * 15 + 85) * 10) / 10,
+                    'Cleanliness & Upkeep Score': Math.round((Math.random() * 15 + 85) * 10) / 10,
+                    'In-stock Rate': Math.round((Math.random() * 20 + 75) * 10) / 10,
+                    'Sell-through Rate': Math.round((Math.random() * 25 + 70) * 10) / 10,
+                    'Customer Satisfaction Score': Math.round((Math.random() * 3 + 7) * 10) / 10,
+                    'Net Promoter Score': Math.floor(Math.random() * 60) + 30,
+                    'Grievance Resolution TAT': Math.round((Math.random() * 20 + 15) * 10) / 10,
+                    'Product Knowledge Score': Math.round((Math.random() * 20 + 75) * 10) / 10,
+                    'Grooming Compliance': Math.round((Math.random() * 15 + 85) * 10) / 10,
+                    'Training Completion Rate': Math.round((Math.random() * 25 + 75) * 10) / 10,
+                    'Manager KPI Compliance': Math.round((Math.random() * 20 + 80) * 10) / 10,
+                    'IT & POS Downtime': Math.round((Math.random() * 3 + 1) * 10) / 10,
+                    'Store Audit Score': Math.round((Math.random() * 20 + 80) * 10) / 10,
+                    'Energy Efficiency': Math.round((Math.random() * 10 + 10) * 10) / 10,
+                    'Community Engagement Index': Math.round((Math.random() * 30 + 60) * 10) / 10
+                };
+            });
+
+            downloadExcel(sampleData, 'Peter_England_Sample_Data.xlsx');
+        }
+
+        function downloadTemplate() {
+            const templateData = stores.map((storeName, index) => {
+                return {
+                    'Store Name': storeName,
+                    'Location': storeName.split(' ').slice(1).join(' '),
+                    'Area': '',
+                    'Status': 'Active',
+                    'Sales Per Square Foot': '',
+                    'Conversion Rate': '',
+                    'Average Transaction Value': '',
+                    'Footfall Count': '',
+                    'VM Compliance Score': '',
+                    'Planogram Adherence': '',
+                    'Cleanliness & Upkeep Score': '',
+                    'In-stock Rate': '',
+                    'Sell-through Rate': '',
+                    'Customer Satisfaction Score': '',
+                    'Net Promoter Score': '',
+                    'Grievance Resolution TAT': '',
+                    'Product Knowledge Score': '',
+                    'Grooming Compliance': '',
+                    'Training Completion Rate': '',
+                    'Manager KPI Compliance': '',
+                    'IT & POS Downtime': '',
+                    'Store Audit Score': '',
+                    'Energy Efficiency': '',
+                    'Community Engagement Index': ''
+                };
+            });
+
+            downloadExcel(templateData, 'Peter_England_Data_Template.xlsx');
+        }
+
+        function downloadExcel(data, filename) {
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            
+            // Add some styling and column widths
+            const cols = [
+                { wch: 25 }, // Store Name
+                { wch: 20 }, // Location
+                { wch: 10 }, // Area
+                { wch: 10 }, // Status
+                { wch: 15 }, // Sales Per Square Foot
+                { wch: 12 }, // Conversion Rate
+                { wch: 18 }, // Average Transaction Value
+                { wch: 12 }, // Footfall Count
+                { wch: 18 }, // VM Compliance Score
+                { wch: 16 }, // Planogram Adherence
+                { wch: 20 }, // Cleanliness & Upkeep Score
+                { wch: 12 }, // In-stock Rate
+                { wch: 15 }, // Sell-through Rate
+                { wch: 22 }, // Customer Satisfaction Score
+                { wch: 15 }, // Net Promoter Score
+                { wch: 20 }, // Grievance Resolution TAT
+                { wch: 18 }, // Product Knowledge Score
+                { wch: 16 }, // Grooming Compliance
+                { wch: 18 }, // Training Completion Rate
+                { wch: 18 }, // Manager KPI Compliance
+                { wch: 15 }, // IT & POS Downtime
+                { wch: 15 }, // Store Audit Score
+                { wch: 15 }, // Energy Efficiency
+                { wch: 22 }  // Community Engagement Index
+            ];
+            
+            ws['!cols'] = cols;
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Store Data');
+            XLSX.writeFile(wb, filename);
+        }
+    </script>
+</body>
+</html>
