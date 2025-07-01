@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peter England Retail Dashboard - Executive View</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fad961 0%, #f76b1c 100%);
+            --error-gradient: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --accent-color: #ff6b35;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin-bottom: 2rem;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-gradient);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--success-gradient);
+            border-radius: 25px;
+            font-weight: 600;
+            box-shadow: 0 5px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .pulse {
+            width: 10px;
+            height: 10px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .dashboard-container {
+            padding: 0 2rem 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .kpi-card {
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: slideInUp 0.6s ease forwards;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: var(--primary-gradient);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .kpi-card.sales::before { background: var(--primary-gradient); }
+        .kpi-card.operations::before { background: var(--secondary-gradient); }
+        .kpi-card.customer::before { background: var(--success-gradient); }
+        .kpi-card.staff::before { background: var(--warning-gradient); }
+
+        .kpi-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .kpi-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+        }
+
+        .kpi-title {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .kpi-value {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .kpi-change {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+
+        .kpi-change.positive {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .kpi-change.negative {
+            background: rgba(255, 65, 108, 0.2);
+            color: #ff416c;
+        }
+
+        .charts-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+        }
+
+        .chart-container {
+            padding: 2rem;
+            position: relative;
+            height: 400px;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .stores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .store-card {
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .store-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .store-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .store-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .store-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .store-status.active {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .store-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .score-indicator {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .score-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .score-fill.good { background: var(--success-gradient); }
+        .score-fill.average { background: var(--warning-gradient); }
+        .score-fill.poor { background: var(--error-gradient); }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.1) rotate(180deg);
+        }
+
+        .excel-config {
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .config-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .config-input {
+            width: 100%;
+            padding: 1rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .config-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .update-btn {
+            padding: 1rem 2rem;
+            background: var(--success-gradient);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .update-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.3);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stores-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header glass">
+        <div class="logo-section">
+            <div class="logo">PE</div>
+            <h1 class="title">Peter England Retail Dashboard</h1>
+        </div>
+        <div class="live-indicator">
+            <div class="pulse"></div>
+            <span>Live Data</span>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Excel Configuration -->
+        <div class="excel-config glass">
+            <h2 class="config-title">Live Excel Sheet Configuration</h2>
+            <input type="text" id="excelUrl" class="config-input" 
+                   placeholder="Enter your live Excel sheet URL (Google Sheets or OneDrive)" 
+                   value="">
+            <input type="number" id="refreshInterval" class="config-input" 
+                   placeholder="Refresh interval in seconds (default: 30)" 
+                   value="30">
+            <button class="update-btn" onclick="updateExcelConfig()">
+                <i class="fas fa-sync-alt"></i> Connect Live Sheet
+            </button>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div class="loading" id="loadingIndicator">
+            <div class="spinner"></div>
+            <p>Fetching live data from Excel sheet...</p>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card glass sales">
+                <div class="kpi-header">
+                    <div class="kpi-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <div class="kpi-title">Total Revenue</div>
+                        <div class="kpi-value" id="totalRevenue">₹0</div>
+                        <div class="kpi-change positive" id="revenueChange">
+                            <i class="fas fa-arrow-up"></i> +0%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kpi-card glass operations">
+                <div class="kpi-header">
+                    <div class="kpi-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div>
+                        <div class="kpi-title">Total Footfall</div>
+                        <div class="kpi-value" id="totalFootfall">0</div>
+                        <div class="kpi-change positive" id="footfallChange">
+                            <i class="fas fa-arrow-up"></i> +0%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kpi-card glass customer">
+                <div class="kpi-header">
+                    <div class="kpi-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div>
+                        <div class="kpi-title">Avg CSAT Score</div>
+                        <div class="kpi-value" id="avgCSAT">0</div>
+                        <div class="kpi-change positive" id="csatChange">
+                            <i class="fas fa-arrow-up"></i> +0%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kpi-card glass staff">
+                <div class="kpi-header">
+                    <div class="kpi-icon">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <div>
+                        <div class="kpi-title">Training Completion</div>
+                        <div class="kpi-value" id="trainingCompletion">0%</div>
+                        <div class="kpi-change positive" id="trainingChange">
+                            <i class="fas fa-arrow-up"></i> +0%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <h2 class="section-title">Performance Analytics</h2>
+            <div class="charts-grid">
+                <div class="chart-container glass">
+                    <h3 class="chart-title">Top Performing Stores</h3>
+                    <canvas id="salesChart"></canvas>
+                </div>
+                <div class="chart-container glass">
+                    <h3 class="chart-title">CSAT Distribution</h3>
+                    <canvas id="csatChart"></canvas>
+                </div>
+                <div class="chart-container glass">
+                    <h3 class="chart-title">Conversion vs Footfall</h3>
+                    <canvas id="conversionChart"></canvas>
+                </div>
+                <div class="chart-container glass">
+                    <h3 class="chart-title">Performance Trends</h3>
+                    <canvas id="trendsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Store Cards -->
+        <div class="stores-section">
+            <h2 class="section-title">Store Performance Overview</h2>
+            <div class="stores-grid" id="storesGrid">
+                <!-- Store cards will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Refresh Button -->
+    <button class="refresh-btn" onclick="refreshData()" title="Refresh Data">
+        <i class="fas fa-sync-alt"></i>
+    </button>
+
+    <script>
+        // Global variables
+        let storeData = [];
+        let charts = {};
+        let refreshInterval;
+        let excelUrl = '';
+        let currentRefreshRate = 30000; // 30 seconds default
+
+        // Store names
+        const storeNames = [
+            'PE Delhi CP', 'PE Mumbai Linking Road', 'PE Bangalore MG Road', 'PE Chennai Express Avenue',
+            'PE Hyderabad Banjara Hills', 'PE Pune FC Road', 'PE Kolkata Park Street', 'PE Gurgaon City Centre',
+            'PE Noida City Centre', 'PE Jaipur Pink Square', 'PE Ahmedabad CG Road', 'PE Lucknow Hazratganj',
+            'PE Indore Treasure Island', 'PE Bhopal DB City', 'PE Chandigarh Elante', 'PE Kochi Lulu Mall',
+            'PE Coimbatore Brookefields', 'PE Mysore Forum', 'PE Visakhapatnam CMR Central', 'PE Vijayawada PVP Square',
+            'PE Nagpur Empress City', 'PE Surat VR Mall', 'PE Vadodara Inorbit', 'PE Rajkot RWorld', 
+            'PE Ludhiana MBD Mall', 'PE Jalandhar Curo High Street', 'PE Amritsar Alpha One', 'PE Dehradun Pacific',
+            'PE Kanpur Z Square', 'PE Agra TDI Mall'
+        ];
+
+        // Metrics configuration
+        const metrics = {
+            sales: [
+                { key: 'salesPerSqFt', name: 'Sales Per Square Foot', unit: '₹/sqft', target: 5000 },
+                { key: 'conversionRate', name: 'Conversion Rate', unit: '%', target: 25 },
+                { key: 'avgTransactionValue', name: 'Average Transaction Value', unit: '₹', target: 2500 },
+                { key: 'footfallCount', name: 'Footfall Count', unit: 'visitors', target: 1000 }
+            ],
+            operations: [
+                { key: 'vmComplianceScore', name: 'VM Compliance Score', unit: '%', target: 90 },
+                { key: 'planogramAdherence', name: 'Planogram Adherence', unit: '%', target: 95 },
+                { key: 'cleanlinessScore', name: 'Cleanliness & Upkeep Score', unit: '%', target: 95 },
+                { key: 'instockRate', name: 'In-stock Rate', unit: '%', target: 90 },
+                { key: 'sellThroughRate', name: 'Sell-through Rate', unit: '%', target: 80 }
+            ],
+            customer: [
+                { key: 'csatScore', name: 'Customer Satisfaction Score', unit: '/10', target: 8.5 },
+                { key: 'npsScore', name: 'Net Promoter Score', unit: '', target: 50 },
+                { key: 'grievanceResolutionTAT', name: 'Grievance Resolution TAT', unit: 'hours', target: 24 }
+            ],
+            staff: [
+                { key: 'productKnowledgeScore', name: 'Product Knowledge Score', unit: '%', target: 85 },
+                { key: 'groomingComplianceScore', name: 'Grooming Compliance', unit: '%', target: 95 },
+                { key: 'trainingCompletionRate', name: 'Training Completion Rate', unit: '%', target: 100 },
+                { key: 'managerKPICompliance', name: 'Manager KPI Compliance', unit: '%', target: 90 }
+            ],
+            infrastructure: [
+                { key: 'itDowntime', name: 'IT & POS Downtime', unit: 'hours', target: 2 },
+                { key: 'storeAuditScore', name: 'Store Audit Score', unit: '%', target: 90 },
+                { key: 'energyEfficiency', name: 'Energy Efficiency', unit: 'kWh/sqft', target: 15 },
+                { key: 'communityEngagement', name: 'Community Engagement Index', unit: '%', target: 75 }
+            ]
+        };
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+            generateSampleData(); // Start with sample data
+            setupCharts();
+            updateDashboard();
+        });
+
+        // Initialize dashboard
+        function initializeDashboard() {
+            Chart.defaults.color = 'rgba(255, 255, 255, 0.8)';
+            Chart.defaults.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+            Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.2)';
+        }
+
+        // Generate sample data
+        function generateSampleData() {
+            storeData = storeNames.map((name, index) => {
+                const store = {
+                    id: index + 1,
+                    name: name,
+                    location: name.split(' ').slice(1).join(' '),
+                    area: Math.floor(Math.random() * 2000) + 1000,
+                    status: Math.random() > 0.1 ? 'Active' : 'Inactive'
+                };
+
+                // Generate metrics data
+                Object.keys(metrics).forEach(category => {
+                    metrics[category].forEach(metric => {
+                        let value;
+                        const variance = 0.3;
+                        
+                        if (metric.unit === '%') {
+                            value = Math.max(0, Math.min(100, 
+                                metric.target + (Math.random() - 0.5) * metric.target * variance));
+                        } else if (metric.unit === 'hours') {
+                            value = Math.max(0, 
+                                metric.target + (Math.random() - 0.5) * metric.target * variance);
+                        } else if (metric.unit === '/10') {
+                            value = Math.max(0, Math.min(10, 
+                                metric.target + (Math.random() - 0.5) * metric.target * variance));
+                        } else {
+                            value = Math.max(0, 
+                                metric.target + (Math.random() - 0.5) * metric.target * variance);
+                        }
+                        
+                        store[metric.key] = Math.round(value * 100) / 100;
+                    });
+                });
+
+                store.revenue = store.salesPerSqFt * store.area;
+                store.overallScore = calculateOverallScore(store);
+                
+                return store;
+            });
+        }
+
+        // Calculate overall score
+        function calculateOverallScore(store) {
+            let totalScore = 0;
+            let totalMetrics = 0;
+            
+            Object.keys(metrics).forEach(category => {
+                metrics[category].forEach(metric => {
+                    const value = store[metric.key];
+                    const target = metric.target;
+                    let score;
+                    
+                    if (metric.unit === 'hours') {
+                        score = Math.max(0, (target * 2 - value) / target * 100);
+                    } else {
+                        score = (value / target) * 100;
+                    }
+                    
+                    totalScore += Math.min(100, score);
+                    totalMetrics++;
+                });
+            });
+            
+            return Math.round(totalScore / totalMetrics * 100) / 100;
+        }
+
+        // Setup charts
+        function setupCharts() {
+            setupSalesChart();
+            setupCSATChart();
+            setupConversionChart();
+            setupTrendsChart();
+        }
+
+        // Setup sales chart
+        function setupSalesChart() {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            const topStores = [...storeData].sort((a, b) => b.revenue - a.revenue).slice(0, 8);
+            
+            charts.salesChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: topStores.map(store => store.name.split(' ').pop()),
+                    datasets: [{
+                        label: 'Revenue (₹ Lakhs)',
+                        data: topStores.map(store => Math.round(store.revenue / 100000)),
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: '#667eea',
+                        borderWidth: 2,
+                        borderRadius: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        x: {
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Setup CSAT chart
+        function setupCSATChart() {
+            const ctx = document.getElementById('csatChart').getContext('2d');
+            
+            const csatRanges = {
+                'Excellent (9-10)': storeData.filter(s => s.csatScore >= 9).length,
+                'Good (7-8.9)': storeData.filter(s => s.csatScore >= 7 && s.csatScore < 9).length,
+                'Average (5-6.9)': storeData.filter(s => s.csatScore >= 5 && s.csatScore < 7).length,
+                'Poor (<5)': storeData.filter(s => s.csatScore < 5).length
+            };
+            
+            charts.csatChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(csatRanges),
+                    datasets: [{
+                        data: Object.values(csatRanges),
+                        backgroundColor: [
+                            'rgba(0, 255, 136, 0.8)',
+                            'rgba(79, 172, 254, 0.8)',
+                            'rgba(255, 184, 0, 0.8)',
+                            'rgba(255, 65, 108, 0.8)'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // Setup conversion chart
+        function setupConversionChart() {
+            const ctx = document.getElementById('conversionChart').getContext('2d');
+            
+            charts.conversionChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Stores',
+                        data: storeData.map(store => ({
+                            x: store.footfallCount,
+                            y: store.conversionRate
+                        })),
+                        backgroundColor: 'rgba(240, 147, 251, 0.8)',
+                        borderColor: '#f093fb',
+                        pointRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Footfall Count' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Conversion Rate (%)' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Setup trends chart
+        function setupTrendsChart() {
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+            
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+            const avgRevenue = months.map(() => Math.floor(Math.random() * 1000000) + 2000000);
+            const avgCSAT = months.map(() => Math.random() * 2 + 7);
+            
+            charts.trendsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [
+                        {
+                            label: 'Avg Revenue (₹ Lakhs)',
+                            data: avgRevenue.map(v => v / 100000),
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Avg CSAT Score',
+                            data: avgCSAT,
+                            borderColor: '#f093fb',
+                            backgroundColor: 'rgba(240, 147, 251, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { color: 'rgba(255, 255, 255, 0.1)' } },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update dashboard
+        function updateDashboard() {
+            updateKPIs();
+            updateStoreCards();
+            updateCharts();
+        }
+
+        // Update KPIs
+        function updateKPIs() {
+            const totalRevenue = storeData.reduce((sum, store) => sum + store.revenue, 0);
+            const totalFootfall = storeData.reduce((sum, store) => sum + store.footfallCount, 0);
+            const avgCSAT = storeData.reduce((sum, store) => sum + store.csatScore, 0) / storeData.length;
+            const avgTraining = storeData.reduce((sum, store) => sum + store.trainingCompletionRate, 0) / storeData.length;
+            
+            document.getElementById('totalRevenue').textContent = `₹${(totalRevenue / 10000000).toFixed(2)}Cr`;
+            document.getElementById('totalFootfall').textContent = totalFootfall.toLocaleString();
+            document.getElementById('avgCSAT').textContent = avgCSAT.toFixed(1);
+            document.getElementById('trainingCompletion').textContent = `${avgTraining.toFixed(1)}%`;
+        }
+
+        // Update store cards
+        function updateStoreCards() {
+            const storesGrid = document.getElementById('storesGrid');
+            storesGrid.innerHTML = '';
+            
+            const sortedStores = [...storeData].sort((a, b) => b.overallScore - a.overallScore);
+            
+            sortedStores.forEach(store => {
+                const storeCard = document.createElement('div');
+                storeCard.className = 'store-card glass';
+                
+                const scoreClass = store.overallScore >= 80 ? 'good' : 
+                                  store.overallScore >= 60 ? 'average' : 'poor';
+                
+                storeCard.innerHTML = `
+                    <div class="store-header">
+                        <div class="store-name">${store.name}</div>
+                        <div class="store-status ${store.status.toLowerCase()}">${store.status}</div>
+                    </div>
+                    <div class="store-metrics">
+                        <div class="metric">
+                            <div class="metric-label">Revenue</div>
+                            <div class="metric-value">₹${(store.revenue / 100000).toFixed(1)}L</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">CSAT</div>
+                            <div class="metric-value">${store.csatScore.toFixed(1)}/10</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Conversion</div>
+                            <div class="metric-value">${store.conversionRate.toFixed(1)}%</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Overall Score</div>
+                            <div class="metric-value">${store.overallScore.toFixed(1)}%</div>
+                        </div>
+                    </div>
+                    <div class="score-indicator">
+                        <div class="score-fill ${scoreClass}" style="width: ${store.overallScore}%"></div>
+                    </div>
+                `;
+                
+                storesGrid.appendChild(storeCard);
+            });
+        }
+
+        // Update charts
+        function updateCharts() {
+            Object.values(charts).forEach(chart => {
+                if (chart && chart.update) {
+                    chart.update();
+                }
+            });
+        }
+
+        // Excel configuration
+        function updateExcelConfig() {
+            const urlInput = document.getElementById('excelUrl');
+            const intervalInput = document.getElementById('refreshInterval');
+            
+            excelUrl = urlInput.value.trim();
+            currentRefreshRate = (parseInt(intervalInput.value) || 30) * 1000;
+            
+            if (excelUrl) {
+                startLiveDataFetch();
+                alert('Live Excel connection configured successfully!');
+            } else {
+                alert('Please enter a valid Excel sheet URL');
+            }
+        }
+
+        // Start live data fetch
+        function startLiveDataFetch() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+            
+            fetchLiveData(); // Initial fetch
+            
+            refreshInterval = setInterval(() => {
+                fetchLiveData();
+            }, currentRefreshRate);
+        }
+
+        // Fetch live data
+        async function fetchLiveData() {
+            if (!excelUrl) return;
+            
+            showLoading(true);
+            
+            try {
+                // Convert Google Sheets URL to CSV export URL
+                let csvUrl = excelUrl;
+                if (excelUrl.includes('docs.google.com/spreadsheets')) {
+                    const sheetId = excelUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+                    if (sheetId) {
+                        csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId[1]}/export?format=csv`;
+                    }
+                }
+                
+                const response = await fetch(csvUrl);
+                const csvData = await response.text();
+                
+                processCSVData(csvData);
+                updateDashboard();
+                
+                // Update last refresh time
+                const now = new Date();
+                console.log(`Data refreshed at: ${now.toLocaleTimeString()}`);
+                
+            } catch (error) {
+                console.error('Error fetching live data:', error);
+                alert('Error connecting to Excel sheet. Please check the URL and try again.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Process CSV data
+        function processCSVData(csvData) {
+            const lines = csvData.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            
+            const newStoreData = [];
+            
+            for (let i = 1; i < lines.length && i <= 30; i++) {
+                if (lines[i].trim()) {
+                    const values = lines[i].split(',');
+                    const store = {
+                        id: i,
+                        name: values[0] || storeNames[i-1],
+                        location: values[1] || storeNames[i-1].split(' ').slice(1).join(' '),
+                        area: parseFloat(values[2]) || Math.floor(Math.random() * 2000) + 1000,
+                        status: values[3] || 'Active'
+                    };
+                    
+                    // Map CSV columns to metrics
+                    let colIndex = 4;
+                    Object.keys(metrics).forEach(category => {
+                        metrics[category].forEach(metric => {
+                            store[metric.key] = parseFloat(values[colIndex]) || 
+                                generateRandomValue(metric);
+                            colIndex++;
+                        });
+                    });
+                    
+                    store.revenue = store.salesPerSqFt * store.area;
+                    store.overallScore = calculateOverallScore(store);
+                    
+                    newStoreData.push(store);
+                }
+            }
+            
+            if (newStoreData.length > 0) {
+                storeData = newStoreData;
+            }
+        }
+
+        // Generate random value for metric
+        function generateRandomValue(metric) {
+            const variance = 0.3;
+            let value;
+            
+            if (metric.unit === '%') {
+                value = Math.max(0, Math.min(100, 
+                    metric.target + (Math.random() - 0.5) * metric.target * variance));
+            } else if (metric.unit === 'hours') {
+                value = Math.max(0, 
+                    metric.target + (Math.random() - 0.5) * metric.target * variance);
+            } else if (metric.unit === '/10') {
+                value = Math.max(0, Math.min(10, 
+                    metric.target + (Math.random() - 0.5) * metric.target * variance));
+            } else {
+                value = Math.max(0, 
+                    metric.target + (Math.random() - 0.5) * metric.target * variance);
+            }
+            
+            return Math.round(value * 100) / 100;
+        }
+
+        // Show/hide loading
+        function showLoading(show) {
+            const loading = document.getElementById('loadingIndicator');
+            loading.style.display = show ? 'block' : 'none';
+        }
+
+        // Manual refresh
+        function refreshData() {
+            if (excelUrl) {
+                fetchLiveData();
+            } else {
+                // Generate new sample data
+                generateSampleData();
+                updateDashboard();
+            }
+            
+            // Animate refresh button
+            const btn = document.querySelector('.refresh-btn i');
+            btn.style.transform = 'rotate(360deg)';
+            setTimeout(() => {
+                btn.style.transform = 'rotate(0deg)';
+            }, 300);
+        }
+
+        // Auto-refresh sample data every 30 seconds if no Excel URL is configured
+        setInterval(() => {
+            if (!excelUrl) {
+                generateSampleData();
+                updateDashboard();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
